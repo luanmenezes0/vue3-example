@@ -1,55 +1,39 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+
+import repo from './components/Repo.vue'
 import spinner from './components/Spinner.vue'
-import { ref, onMounted } from 'vue'
+import useGetRepos from './services/useGetRepos'
 
 const name = ref('')
-const data = ref<{ name: string }[]>([])
-const loading = ref(false)
-const error = ref<string>('')
+const filter = ref('')
 
-async function getRepos() {
-  error.value = ''
-  loading.value = true
-  data.value = []
+const { data, error, getRepos, loading } = useGetRepos()
 
-  try {
-    const response = await fetch(`https://api.github.com/users/${name.value}/repos`)
-
-    const result = await response.json()
-
-    if (response.ok) {
-      data.value = result
-      error.value = ''
-    } else {
-      error.value = result.message
-      data.value = []
-    }
-  } catch (err) {
-    error.value = err.message
-    data.value = []
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => console.log('moounteddd!'))
+const filteredRepos = computed(() => data.value.filter(re => re.name.includes(filter.value)))
 
 </script>
 
 <template>
   <main>
-    <h3>Enter Github username</h3>
-    <form @submit.prevent>
+    <h1>Enter a Github organization</h1>
+    <form @submit.prevent class="repo-form">
       <input type="text" placeholder="username" v-model="name" />
-      <button @click="getRepos">Press me</button>
+      <button @click="getRepos(name)">Search</button>
     </form>
 
     <section>
-      <spinner v-if="loading">loading...</spinner>
       <div class="error" v-if="error">{{ error }}</div>
-      <ul>
-        <li v-for="repo in data">{{ repo.name }}</li>
-      </ul>
+      <spinner v-if="loading" />
+      <div>
+        <div class="search-form">
+          <label for="filter">Filter by name</label>
+          <input id="filter" type="text" v-model="filter" />
+        </div>
+        <div class="list">
+          <repo v-for="repo in filteredRepos" :repository="repo" :key="repo.id"></repo>
+        </div>
+      </div>
     </section>
   </main>
 </template>
@@ -60,10 +44,11 @@ main {
   gap: 1rem;
 }
 
-form {
+.repo-form {
   display: flex;
   gap: 1rem;
 }
+
 .error {
   color: #721c24;
   background-color: #f8d7da;
@@ -76,6 +61,15 @@ form {
 }
 
 section {
+  display: grid;
+}
+
+.list {
+  display: grid;
+  gap: 1rem;
+}
+
+.search-form {
   display: grid;
 }
 </style>
