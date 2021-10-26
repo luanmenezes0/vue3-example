@@ -1,10 +1,12 @@
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import { Repository } from "../models/models";
 
 export default function useGetRepos() {
   const data = ref<Repository[]>([]);
   const loading = ref(false);
   const error = ref("");
+
+  const state = reactive({ data: [], loading: false, error: "" });
 
   async function getRepos(name: string) {
     error.value = "";
