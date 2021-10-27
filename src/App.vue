@@ -3,9 +3,9 @@ import { computed, ref } from "vue";
 
 import repo from "./components/Repo.vue";
 import spinner from "./components/Spinner.vue";
-import useGetRepos from "./services/useGetRepos";
+import useGetRepos from "./features/useGetRepos";
 
-const name = ref("facebook");
+const name = ref("");
 const filter = ref("");
 
 const { data, error, getRepos, loading } = useGetRepos();
