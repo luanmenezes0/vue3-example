@@ -1,17 +1,15 @@
-import { ref, reactive } from "vue";
+import { reactive, toRefs } from "vue";
 import { Repository } from "../models/models";
 
-export default function useGetRepos() {
-  const data = ref<Repository[]>([]);
-  const loading = ref(false);
-  const error = ref("");
+type State = { data: Repository[]; loading: boolean; error: string };
 
-  const state = reactive({ data: [], loading: false, error: "" });
+export default function useGetRepos() {
+  const state = reactive<State>({ data: [], loading: false, error: "" });
 
   async function getRepos(name: string) {
-    error.value = "";
-    loading.value = true;
-    data.value = [];
+    state.loading = true;
+    state.data = [];
+    state.error = "";
 
     try {
       const response = await fetch(
@@ -21,19 +19,19 @@ export default function useGetRepos() {
       const result = await response.json();
 
       if (response.ok) {
-        data.value = result;
-        error.value = "";
+        state.data = result;
+        state.error = "";
       } else {
-        error.value = result.message;
-        data.value = [];
+        state.error = result.message;
+        state.data = [];
       }
     } catch (err) {
-      error.value = err.message;
-      data.value = [];
+      state.error = err.message;
+      state.data = [];
     } finally {
-      loading.value = false;
+      state.loading = false;
     }
   }
 
-  return { loading, data, error, getRepos };
+  return { ...toRefs(state), getRepos };
 }
